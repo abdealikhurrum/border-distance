@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Border Distance</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "@turf/turf": "https://cdn.jsdelivr.net/npm/@turf/turf@7.1.0/+esm",
+      "topojson-client": "https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/+esm",
+      "leaflet": "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/+esm"
+    }
+  }
+  </script>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; display: grid; grid-template-columns: 360px 1fr; height: 100vh; }
+    #panel { padding: 16px; overflow: auto; border-right: 1px solid #ddd; }
+    #map { height: 100vh; }
+    .card { border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .card.active { border-color: #2563eb; box-shadow: 0 0 0 2px #2563eb22; }
+    input[type=text] { width: 100%; box-sizing: border-box; padding: 6px; }
+    button { padding: 6px 10px; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+    td, th { text-align: left; padding: 6px 4px; border-bottom: 1px solid #eee; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .muted { color: #888; }
+  </style>
+</head>
+<body>
+  <div id="panel">
+    <h2>Border Distance</h2>
+    <p class="muted">Set two points by address or by clicking the map. See how the distance changes by administrative level.</p>
+
+    <div class="card" id="cardA">
+      <strong>Point A</strong>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <input type="text" id="addrA" placeholder="Address or place, e.g. Dallas, TX" />
+        <button id="geoA">Find</button>
+      </div>
+      <button id="pinA" style="margin-top:6px;">Set on map</button>
+      <div class="muted" id="labelA"></div>
+    </div>
+
+    <div class="card" id="cardB">
+      <strong>Point B</strong>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <input type="text" id="addrB" placeholder="Address or place" />
+        <button id="geoB">Find</button>
+      </div>
+      <button id="pinB" style="margin-top:6px;">Set on map</button>
+      <div class="muted" id="labelB"></div>
+    </div>
+
+    <div style="margin:8px 0;">
+      <label>Show borders for:
+        <select id="level">
+          <option value="state">State</option>
+          <option value="county" selected>County</option>
+          <option value="place">City / Place</option>
+        </select>
+      </label>
+      <label style="margin-left:10px;">Units:
+        <select id="units">
+          <option value="miles" selected>Miles</option>
+          <option value="km">Kilometers</option>
+        </select>
+      </label>
+    </div>
+
+    <table id="results"><tbody></tbody></table>
+    <div id="status" class="muted"></div>
+  </div>
+  <div id="map"></div>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
