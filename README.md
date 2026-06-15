@@ -13,7 +13,10 @@ Ealing, Watford → Watford, Slough → Slough). Set an optional
 **threshold** and the tool marks whether the selected level's between-distance
 meets it — and, when the shortest route overshoots by ≤10%, it will pick an
 alternative route that comes in under. When there are no waypoints, the tool also
-offers alternative routes to choose from.
+offers alternative routes to choose from. You can also **import a route** (GPX,
+GeoJSON, KML, or an encoded polyline) to use as the path instead of the computed
+driving route — its endpoints become the two points, and each shows the
+administrative levels it falls in and their names.
 
 For example, driving McKinney → Dallas is ~30 mi, but the **county-between**
 figure is ~0 because the route crosses straight from Collin County into the
@@ -62,6 +65,8 @@ Node (npx). Raw downloads are cached under `data/tmp/` (git-ignored).
   waypoints).
 - `js/routeBetween.js` — pure: clips a route polyline against two unit polygons
   to measure the mileage lying between them.
+- `js/routeImport.js` — pure: parses an imported GPX / GeoJSON / KML /
+  encoded-polyline route into a LineString + distance.
 - `js/map.js` / `js/app.js` — Leaflet map and UI orchestration.
 
 ## Known limitations
