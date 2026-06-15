@@ -34,7 +34,7 @@
   <div id="panel">
     <p class="muted"><a href="https://abdealikhurrum.github.io/">← Abdeali Khurrum</a></p>
     <h2>Border Distance</h2>
-    <p class="muted">Set two points by address or by clicking the map; optionally add waypoints. See the driving distance and how much of the route falls between their administrative units at each level.</p>
+    <p class="muted">Set two points by address or by clicking the map; optionally add waypoints. Covers the US and London (more cities to come). See the driving distance and how much of the route falls between their administrative units at each level.</p>
 
     <div class="card" id="cardA">
       <strong>Point A</strong>
@@ -69,12 +69,12 @@
     <div id="alts" style="margin:8px 0;"></div>
 
     <div style="margin:8px 0;">
+      <label>Threshold: <input type="number" id="threshold" min="0" step="1" style="width:80px;" placeholder="none" /> <span id="thUnit" class="muted">mi</span></label>
+    </div>
+
+    <div style="margin:8px 0;">
       <label>Show borders for:
-        <select id="level">
-          <option value="state">State</option>
-          <option value="county" selected>County</option>
-          <option value="place">City / Place</option>
-        </select>
+        <select id="level"></select>
       </label>
       <label style="margin-left:10px;">Units:
         <select id="units">
@@ -86,6 +86,7 @@
 
     <table id="results"><tbody></tbody></table>
     <div id="status" class="muted"></div>
+    <p class="muted" id="disclaimer" style="margin-top:16px; font-size:0.8em; line-height:1.4;">Boundary, geocoding, and routing data come from public sources (US Census, OpenStreetMap/Nominatim, OSRM). No guarantee is made of its accuracy — this is an approximation tool for the curious, not for navigation, legal, or official use.</p>
   </div>
   <div id="map"></div>
 
