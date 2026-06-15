@@ -34,12 +34,16 @@ function geojsonCoords(text) {
 
 function gpxCoords(text) {
   const pts = [];
-  const re = /<(?:trkpt|rtept)\b[^>]*?\blat=["']([-\d.]+)["'][^>]*?\blon=["']([-\d.]+)["']/gi;
+  // Read lat/lon from each point's attributes independently, so either
+  // attribute order (and a mix of both across points) parses correctly.
+  const tagRe = /<(?:trkpt|rtept)\b([^>]*?)\/?>/gi;
   let m;
-  while ((m = re.exec(text))) pts.push([parseFloat(m[2]), parseFloat(m[1])]);
-  if (pts.length) return pts;
-  const re2 = /<(?:trkpt|rtept)\b[^>]*?\blon=["']([-\d.]+)["'][^>]*?\blat=["']([-\d.]+)["']/gi;
-  while ((m = re2.exec(text))) pts.push([parseFloat(m[1]), parseFloat(m[2])]);
+  while ((m = tagRe.exec(text))) {
+    const attrs = m[1];
+    const lat = /\blat=["']([-\d.]+)["']/.exec(attrs);
+    const lon = /\blon=["']([-\d.]+)["']/.exec(attrs);
+    if (lat && lon) pts.push([parseFloat(lon[1]), parseFloat(lat[1])]);
+  }
   return pts;
 }
 

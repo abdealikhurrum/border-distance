@@ -37,6 +37,14 @@ test('gpx concatenates trkpt across segments; rtept fallback', () => {
   assert.equal(parseRoute(rte, 'gpx').geometry.coordinates.length, 2);
 });
 
+test('gpx handles mixed lat-first and lon-first attribute orders', () => {
+  const gpx = `<gpx><trk><trkseg><trkpt lat="51.5" lon="-0.1"/><trkpt lon="-0.2" lat="51.6"/></trkseg></trk></gpx>`;
+  const r = parseRoute(gpx, 'gpx');
+  assert.equal(r.geometry.coordinates.length, 2);
+  assert.deepEqual(r.geometry.coordinates[0], [-0.1, 51.5]);
+  assert.deepEqual(r.geometry.coordinates[1], [-0.2, 51.6]);
+});
+
 test('kml LineString coordinates', () => {
   const kml = `<kml><Placemark><LineString><coordinates>-0.1,51.5,0 -0.2,51.6,0 -0.3,51.7,0</coordinates></LineString></Placemark></kml>`;
   const r = parseRoute(kml, 'kml');
