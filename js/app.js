@@ -5,7 +5,8 @@ import { geocode } from './geocode.js';
 import { initMap, setPin, panTo, onPinDrag, drawLevel, clearOverlays } from './map.js';
 
 const loader = createLoader('./data');
-const state = { A: null, B: null, active: 'A', level: 'county', units: 'miles' };
+const state = { A: null, B: null, active: 'A', level: 'county', units: 'miles', dist: null };
+const seq = { A: 0, B: 0 };
 
 const $ = (id) => document.getElementById(id);
 const setStatus = (msg) => { $('status').textContent = msg || ''; };
@@ -17,29 +18,26 @@ function fmt(d, available, note) {
   return `${v.toFixed(1)} ${u}`;
 }
 
-function polyRow(label, fa, fb, note) {
-  return (fa && fb)
-    ? [label, fmt(polygonDistance(fa, fb), true)]
-    : [label, fmt(null, false, note)];
-}
-
 function setActiveCard() {
   $('cardA').classList.toggle('active', state.active === 'A');
   $('cardB').classList.toggle('active', state.active === 'B');
 }
 
-async function setEndpoint(key, point, label) {
+async function setEndpoint(key, point, label, { pan = true } = {}) {
+  const token = ++seq[key];
   setStatus(`Resolving point ${key}…`);
   try {
     const resolved = await resolvePoint(point, loader);
+    if (token !== seq[key]) return; // superseded by a newer call
     state[key] = { point, resolved, label };
     setPin(key, point);
-    onPinDrag(key, (p) => setEndpoint(key, p, `dragged pin (${p.lat.toFixed(4)}, ${p.lon.toFixed(4)})`));
-    panTo(point);
+    onPinDrag(key, (p) => setEndpoint(key, p, `dragged pin (${p.lat.toFixed(4)}, ${p.lon.toFixed(4)})`, { pan: false }));
+    if (pan) panTo(point);
     renderLabel(key);
+    computeDistances();
     render();
   } catch (e) {
-    setStatus(`Could not resolve point ${key}: ${e.message}`);
+    if (token === seq[key]) setStatus(`Could not resolve point ${key}: ${e.message}`);
   }
 }
 
@@ -53,23 +51,34 @@ function renderLabel(key) {
   $(`label${key}`).textContent = `${s.label} → ${parts.join(', ')}`;
 }
 
-function render() {
+function computeDistances() {
   const A = state.A, B = state.B;
+  if (!(A && B && !A.resolved.outsideUS && !B.resolved.outsideUS)) { state.dist = null; return; }
+  const pd = (fa, fb) => (fa && fb) ? polygonDistance(fa, fb) : null;
+  state.dist = {
+    p2p: pointToPoint(A.point, B.point),
+    place: pd(A.resolved.place, B.resolved.place),
+    county: pd(A.resolved.county, B.resolved.county),
+    state: pd(A.resolved.state, B.resolved.state),
+  };
+}
+
+function render() {
+  const d = state.dist;
   const rows = [];
-  if (A && B && !A.resolved.outsideUS && !B.resolved.outsideUS) {
-    rows.push(['Point-to-point', fmt(pointToPoint(A.point, B.point), true)]);
-    rows.push(polyRow('City / Place', A.resolved.place, B.resolved.place, 'n/a (outside any incorporated place)'));
-    rows.push(polyRow('County', A.resolved.county, B.resolved.county, 'n/a (no county)'));
-    rows.push(polyRow('State', A.resolved.state, B.resolved.state, 'n/a'));
-  } else if (A && B) {
+  if (d) {
+    rows.push(['Point-to-point', fmt(d.p2p, true)]);
+    rows.push(['City / Place', d.place ? fmt(d.place, true) : fmt(null, false, 'n/a (outside any incorporated place)')]);
+    rows.push(['County', d.county ? fmt(d.county, true) : fmt(null, false, 'n/a (no county)')]);
+    rows.push(['State', d.state ? fmt(d.state, true) : fmt(null, false, 'n/a')]);
+  } else if (state.A && state.B) {
     setStatus('One or both points are outside the US.');
   }
   $('results').querySelector('tbody').innerHTML = rows.length
     ? rows.map(([k, v]) => `<tr><td>${k}</td><td class="num">${v}</td></tr>`).join('')
     : '<tr><td class="muted">Set both points to see distances.</td></tr>';
-
   drawForLevel();
-  if (A && B && !A.resolved.outsideUS && !B.resolved.outsideUS) setStatus('');
+  if (d) setStatus('');
 }
 
 function featAtLevel(s) {
@@ -81,9 +90,8 @@ function drawForLevel() {
   const A = state.A, B = state.B;
   if (!A || !B) { clearOverlays(); return; }
   const fa = featAtLevel(A), fb = featAtLevel(B);
-  let nearest = null;
-  if (fa && fb) nearest = polygonDistance(fa, fb).nearestPair;
-  drawLevel(fa, fb, nearest);
+  const cached = state.dist ? state.dist[state.level] : null;
+  drawLevel(fa, fb, cached ? cached.nearestPair : null);
 }
 
 async function handleGeocode(key) {

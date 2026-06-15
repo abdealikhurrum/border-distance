@@ -16,8 +16,11 @@ export function initMap(elId, onPick) {
 }
 
 export function setPin(key, point) {
-  if (pins[key]) map.removeLayer(pins[key]);
-  pins[key] = L.marker([point.lat, point.lon], { draggable: true }).addTo(map).bindTooltip(`Point ${key}`);
+  if (pins[key]) {
+    pins[key].setLatLng([point.lat, point.lon]);
+  } else {
+    pins[key] = L.marker([point.lat, point.lon], { draggable: true }).addTo(map).bindTooltip(`Point ${key}`);
+  }
   return pins[key];
 }
 
@@ -26,7 +29,8 @@ export function panTo(point) {
 }
 
 export function onPinDrag(key, handler) {
-  if (pins[key]) pins[key].on('dragend', (e) => {
+  if (!pins[key]) return;
+  pins[key].off('dragend').on('dragend', (e) => {
     const ll = e.target.getLatLng();
     handler({ lat: ll.lat, lon: ll.lng });
   });
