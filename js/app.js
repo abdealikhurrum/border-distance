@@ -72,7 +72,8 @@ function renderLabel(key) {
   else {
     const cfg = REGIONS[r.region];
     const parts = cfg.levels.map((l) => r.units[l.key]?.properties.NAME).filter(Boolean);
-    txt = `${parts.join(', ')} (${cfg.name})`;
+    // Append the region name only when it isn't already shown (avoids "London … (London)").
+    txt = parts.includes(cfg.name) ? parts.join(', ') : `${parts.join(', ')} (${cfg.name})`;
   }
   $(`label${key}`).textContent = `${s.label} → ${txt}`;
 }

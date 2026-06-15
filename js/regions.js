@@ -13,7 +13,9 @@ export const REGIONS = {
   london: {
     id: 'london', name: 'London', kind: 'urban', detectKey: 'city',
     levels: [
-      { key: 'city', label: 'Greater London', relId: 175342, file: { path: 'metros/london/city.topo.json' } },
+      // `city` is a metro buffer (core + immediate surroundings within km of center);
+      // built by build/prepare-metro-buffer.sh. `region` is the OSM admin relation.
+      { key: 'city', label: 'London', buffer: { center: [-0.1276, 51.5072], km: 50 }, file: { path: 'metros/london/city.topo.json' } },
       { key: 'region', label: 'England', relId: 58447, file: { path: 'metros/london/region.topo.json' } },
     ],
   },

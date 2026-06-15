@@ -5,7 +5,9 @@ come). Pick two points (by address or by clicking the map), optionally add
 waypoints, and see the **driving distance** between them plus how much of the
 route falls *between* their administrative units at each level. Each point is
 resolved to the specific polygons that contain it; the levels are
-region-specific (US: place/county/state; London: city/region). Set an optional
+region-specific (US: place/county/state; metros: a ~50 km city/metro area + its
+wider region). A metro's "city" unit is the core plus its immediate surroundings
+within ~50 km, so nearby towns resolve to the same metro. Set an optional
 **threshold** and the tool marks whether the selected level's between-distance
 meets it — and, when the shortest route overshoots by ≤10%, it will pick an
 alternative route that comes in under. When there are no waypoints, the tool also
@@ -46,8 +48,10 @@ Node (npx). Raw downloads are cached under `data/tmp/` (git-ignored).
   containing admin units.
 - `js/routeChoice.js` — pure rule that picks a route under the threshold when the
   shortest overshoots by ≤10%.
-- `build/prepare-metro.sh` — fetches a city's OSM admin relations (via Overpass)
-  into simplified TopoJSON.
+- `build/prepare-metro-buffer.sh` — builds a metro's `city` unit as a ~50 km
+  buffer around its centre (core + immediate surroundings).
+- `build/prepare-metro.sh` — fetches a city's wider OSM admin relations (e.g. the
+  containing region) via Overpass into simplified TopoJSON.
 - `js/distance.js` — pure geometry: great-circle point-to-point (the
   straight-line reference). (`polygonDistance` is also exported and tested but
   is no longer wired into the UI, which now uses route-between mileage.)
