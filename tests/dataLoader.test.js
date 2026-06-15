@@ -23,7 +23,8 @@ test('loader caches: second call does not re-fetch', async () => {
   const fakeFetch = async () => { n++; return { ok: true, json: async () => topo }; };
   const loader = createLoader('./data', fakeFetch);
   await loader.getStates();
-  await loader.getStates();
+  const fc = await loader.getStates();
+  assert.equal(fc.type, 'FeatureCollection');
   assert.equal(n, 1);
 });
 
@@ -31,4 +32,11 @@ test('loader throws on non-ok response', async () => {
   const fakeFetch = async () => ({ ok: false, status: 404 });
   const loader = createLoader('./data', fakeFetch);
   await assert.rejects(() => loader.getCounties(), /404/);
+});
+
+test('loadTopo throws when TopoJSON has no objects', async () => {
+  const empty = { type: 'Topology', objects: {}, arcs: [] };
+  const fakeFetch = async () => ({ ok: true, json: async () => empty });
+  const loader = createLoader('./data', fakeFetch);
+  await assert.rejects(() => loader.getStates(), /No objects in TopoJSON/);
 });

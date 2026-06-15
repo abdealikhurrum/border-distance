@@ -11,6 +11,7 @@ export function createLoader(base = './data', fetchImpl = defaultFetch) {
     if (!res.ok) throw new Error(`Failed to load ${path}: ${res.status}`);
     const topo = await res.json();
     const objName = Object.keys(topo.objects)[0];
+    if (!objName) throw new Error(`No objects in TopoJSON at ${path}`);
     const geo = feature(topo, topo.objects[objName]);
     cache.set(path, geo);
     return geo;
