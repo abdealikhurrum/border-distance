@@ -1,7 +1,7 @@
 # Border Distance
 
-A static web tool covering the **United States and London** (more cities to
-come). Pick two points (by address or by clicking the map), optionally add
+A static web tool covering the **United States and several metros** (London,
+Birmingham, Stuttgart, Paris, Mumbai, Hyderabad). Pick two points (by address or by clicking the map), optionally add
 waypoints, and see the **driving distance** between them plus how much of the
 route falls *between* their administrative units at each level. Each point is
 resolved to the specific polygons that contain it; the levels are

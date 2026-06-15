@@ -33,5 +33,16 @@ test('every level has a file (path or lazyDir+parent); REGION_IDS lists ids', ()
       assert.ok(f.path || (f.lazyDir && f.parent), `${id}.${lvl.key} file`);
     }
   }
-  assert.deepEqual(REGION_IDS.sort(), ['london', 'us']);
+  assert.deepEqual(REGION_IDS.slice().sort(), ['birmingham', 'hyderabad', 'london', 'mumbai', 'paris', 'stuttgart', 'us']);
+});
+
+test('each metro has a district level with a data file', () => {
+  for (const id of ['birmingham', 'stuttgart', 'paris', 'mumbai', 'hyderabad']) {
+    const r = REGIONS[id];
+    assert.equal(r.kind, 'urban');
+    assert.equal(r.detectKey, 'district');
+    assert.equal(r.metroRadiusKm, 50);
+    const district = r.levels.find((l) => l.key === 'district');
+    assert.equal(district.file.path, `metros/${id}/districts.topo.json`);
+  }
 });

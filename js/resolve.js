@@ -12,7 +12,8 @@ export function findContaining(point, features) {
 export async function detectRegion(point, loader) {
   const layers = await loader.getDetectLayers();
   for (const id of REGION_IDS) {
-    if (findContaining(point, layers[id].features)) return id;
+    const layer = layers[id];
+    if (layer && findContaining(point, layer.features)) return id;
   }
   return null;
 }
@@ -27,7 +28,9 @@ export async function resolvePoint(point, loader) {
   let region = null;
   let detectFeat = null;
   for (const id of REGION_IDS) {
-    const f = findContaining(point, layers[id].features);
+    const layer = layers[id];
+    if (!layer) continue;
+    const f = findContaining(point, layer.features);
     if (f) { region = id; detectFeat = f; break; }
   }
   if (!region) return { region: null, outside: true, units: {} };
