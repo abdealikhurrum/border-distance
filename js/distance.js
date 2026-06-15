@@ -20,22 +20,24 @@ export function polygonDistance(a, b) {
   let bestKm = Infinity;
   let bestPair = null;
 
-  const scan = (srcLines, dstLines) => {
+  const scan = (srcLines, dstLines, srcIsA) => {
     for (const src of srcLines) {
       for (const coord of turf.coordAll(src)) {
         const pt = turf.point(coord);
         for (const dst of dstLines) {
           const snapped = turf.nearestPointOnLine(dst, pt, { units: 'kilometers' });
-          if (snapped.properties.dist < bestKm) {
-            bestKm = snapped.properties.dist;
-            bestPair = [coord, snapped.geometry.coordinates];
+          if (snapped.properties.pointDistance < bestKm) {
+            bestKm = snapped.properties.pointDistance;
+            bestPair = srcIsA
+              ? [coord, snapped.geometry.coordinates]
+              : [snapped.geometry.coordinates, coord];
           }
         }
       }
     }
   };
 
-  scan(aLines, bLines);
-  scan(bLines, aLines);
+  scan(aLines, bLines, true);
+  scan(bLines, aLines, false);
   return { km: bestKm, miles: bestKm / KM_PER_MILE, nearestPair: bestPair };
 }
