@@ -26,6 +26,8 @@
     td, th { text-align: left; padding: 6px 4px; border-bottom: 1px solid #eee; }
     .num { text-align: right; font-variant-numeric: tabular-nums; }
     .muted { color: #888; }
+    .wp-row { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 4px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9em; }
+    .wp-row button { padding: 2px 6px; }
   </style>
 </head>
 <body>
@@ -52,6 +54,18 @@
       <button id="pinB" style="margin-top:6px;">Set on map</button>
       <div class="muted" id="labelB"></div>
     </div>
+
+    <div class="card" id="cardWp">
+      <strong>Waypoints (optional)</strong>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <input type="text" id="addrWp" placeholder="Waypoint address" />
+        <button id="geoWp">Add</button>
+      </div>
+      <button id="addWp" style="margin-top:6px;">Add on map</button>
+      <div id="wpList"></div>
+    </div>
+
+    <div id="alts" style="margin:8px 0;"></div>
 
     <div style="margin:8px 0;">
       <label>Show borders for:
