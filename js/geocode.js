@@ -5,7 +5,7 @@ const defaultFetch = (...args) => fetch(...args);
 // headers, so it is unusable from a static page — Nominatim is the only
 // browser-reachable, key-free option here.
 export async function geocode(address, fetchImpl = defaultFetch) {
-  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=us&q=${encodeURIComponent(address)}`;
+  const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=us,gb&q=${encodeURIComponent(address)}`;
   const res = await fetchImpl(url, { headers: { Accept: 'application/json' } });
   if (!res.ok) throw new Error(`Geocoding failed: ${res.status}`);
   const arr = await res.json();

@@ -10,7 +10,7 @@ test('geocode parses a Nominatim match', async () => {
   };
   const r = await geocode('Dallas, TX', fakeFetch);
   assert.match(calledUrl, /nominatim\.openstreetmap\.org/);
-  assert.match(calledUrl, /countrycodes=us/);
+  assert.match(calledUrl, /countrycodes=us%2Cgb|countrycodes=us,gb/);
   assert.equal(r.lon, -96.79);
   assert.equal(r.lat, 32.77);
   assert.equal(r.source, 'nominatim');
