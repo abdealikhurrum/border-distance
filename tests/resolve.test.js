@@ -10,7 +10,7 @@ const sq = (x0, y0, props) =>
 const fake = {
   getDetectLayers: async () => ({
     us: turf.featureCollection([sq(0, 0, { STATEFP: '48', NAME: 'Texas' })]),
-    london: turf.featureCollection([sq(10, 0, { NAME: 'Greater London' })]),
+    london: turf.featureCollection([sq(10, 0, { NAME: 'Ealing' })]),
   }),
   getLevel: async (regionId, levelKey) => {
     const f = {
@@ -41,10 +41,10 @@ test('resolvePoint resolves US chain (place lazy by state fips)', async () => {
   assert.equal(r.units.place.properties.NAME, 'McKinney');
 });
 
-test('resolvePoint resolves London (city + region)', async () => {
+test('resolvePoint resolves London (district + region)', async () => {
   const r = await resolvePoint({ lon: 10.5, lat: 0.5 }, fake);
   assert.equal(r.region, 'london');
-  assert.equal(r.units.city.properties.NAME, 'Greater London');
+  assert.equal(r.units.district.properties.NAME, 'Ealing');
   assert.equal(r.units.region.properties.NAME, 'England');
 });
 

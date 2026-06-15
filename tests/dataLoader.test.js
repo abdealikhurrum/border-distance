@@ -15,7 +15,7 @@ test('getDetectLayers loads US states + London city', async () => {
   const layers = await loader.getDetectLayers();
   assert.ok('us' in layers && 'london' in layers);
   assert.ok(calls.includes('./data/states.topo.json'));
-  assert.ok(calls.includes('./data/metros/london/city.topo.json'));
+  assert.ok(calls.includes('./data/metros/london/districts.topo.json'));
 });
 
 test('getLevel: US place is lazy by state fips; county is fixed', async () => {
