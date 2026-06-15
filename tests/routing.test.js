@@ -12,7 +12,7 @@ test('getRoute builds a 2-coordinate URL with alternatives and parses routes', a
     { distance: 51500, geometry: lineGeom },
   ]); };
   const routes = await getRoute(
-    [{ lat: 33.1972, lon: -96.6398 }, { lat: 32.7767, lon: -96.7970 }],
+    [{ lat: 33.1972, lon: -96.6398 }, { lat: 32.7767, lon: -96.797 }],
     fakeFetch, { alternatives: true });
   assert.match(calledUrl, /\/driving\/-96\.6398,33\.1972;-96\.797,32\.7767/);
   assert.match(calledUrl, /alternatives=3/);
