@@ -16,6 +16,7 @@ const state = {
 };
 const seq = { A: 0, B: 0 };
 let routeSeq = 0;
+let thresholdTimer = null;
 const MI = 1.609344;
 
 const $ = (id) => document.getElementById(id);
@@ -225,7 +226,7 @@ function init() {
   $('alts').addEventListener('change', (e) => { if (e.target.name === 'alt') { state.selected = Number(e.target.value); render(); } });
   $('level').onchange = (e) => { state.level = e.target.value; render(); };
   $('units').onchange = (e) => { state.units = e.target.value; $('thUnit').textContent = state.units === 'miles' ? 'mi' : 'km'; render(); };
-  $('threshold').addEventListener('input', () => render());
+  $('threshold').addEventListener('input', () => { clearTimeout(thresholdTimer); thresholdTimer = setTimeout(render, 250); });
   setActiveCard();
   render();
 }

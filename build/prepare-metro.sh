@@ -27,4 +27,8 @@ npx -y mapshaper "$TMP/${KEY}.geojson" \
   -filter-fields NAME \
   -simplify 8% keep-shapes \
   -o format=topojson quantization=1e5 "$OUTDIR/${KEY}.topo.json"
+# Sanity guard: a wrong/empty relation (or the wrong mapshaper layer) would write
+# a file with no polygons. Catch that here rather than at resolve time.
+grep -Eq '"type":"(Polygon|MultiPolygon)"' "$OUTDIR/${KEY}.topo.json" \
+  || { echo "ERROR: no polygon geometry in $OUTDIR/${KEY}.topo.json (check relation ${REL} / mapshaper layer)"; exit 1; }
 echo "wrote $OUTDIR/${KEY}.topo.json"
