@@ -70,13 +70,11 @@ encoded polyline.
 Errors: throw a clear `Error` on empty input, unparseable content, or no usable
 line (≥ 2 coordinates). The caller surfaces the message inline.
 
-To keep the module DOM-free and testable, XML parsing is done by the caller
-(browser `DOMParser`) which hands `routeImport` the extracted coordinate arrays;
-`routeImport` owns format detection, polyline/geojson parsing (pure string/JSON),
-LineString assembly, distance, and validation. (Equivalent: the GPX/KML coord
-extraction is a small pure regex-based helper in `routeImport` so the whole
-module is unit-testable — this is the approach taken: regex extraction of
-`trkpt`/`rtept` lat/lon and KML `<coordinates>`, no DOM dependency.)
+`routeImport` does all parsing itself with no DOM dependency, so the whole module
+is pure and unit-testable in Node: GeoJSON via `JSON.parse`; polyline via the
+decode algorithm; GPX via regex extraction of `<trkpt>`/`<rtept>` `lat`/`lon`
+attributes; KML via regex extraction of `<coordinates>` text. (Regex is
+sufficient because we only need ordered coordinates, not full XML fidelity.)
 
 ### App integration
 
