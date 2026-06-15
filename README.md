@@ -1,11 +1,14 @@
 # Border Distance
 
-A static web tool. Pick two US points (by address or by clicking the map),
-optionally add waypoints, and see the **driving distance** between them plus how
-much of the route falls *between* their administrative units at each level
-(city/place, county, state). Each point is resolved to the specific polygons
-that contain it, so a point in the Collin-County part of Dallas is treated as
-Collin County — not Dallas County. When there are no waypoints, the tool also
+A static web tool covering the **United States and London** (more cities to
+come). Pick two points (by address or by clicking the map), optionally add
+waypoints, and see the **driving distance** between them plus how much of the
+route falls *between* their administrative units at each level. Each point is
+resolved to the specific polygons that contain it; the levels are
+region-specific (US: place/county/state; London: city/region). Set an optional
+**threshold** and the tool marks whether the selected level's between-distance
+meets it — and, when the shortest route overshoots by ≤10%, it will pick an
+alternative route that comes in under. When there are no waypoints, the tool also
 offers alternative routes to choose from.
 
 For example, driving McKinney → Dallas is ~30 mi, but the **county-between**
@@ -37,8 +40,14 @@ Node (npx). Raw downloads are cached under `data/tmp/` (git-ignored).
 - `js/geocode.js` — address → point via Nominatim (OpenStreetMap).
 - `js/dataLoader.js` — fetches + caches TopoJSON, converts to GeoJSON (states and
   counties upfront; place polygons lazily, one file per state).
-- `js/resolve.js` — point-in-polygon resolution of a point to its containing
-  `{state, county, place}`.
+- `js/regions.js` — registry of covered regions (US full-country + curated
+  cities like London) and their ordered admin levels + data-file layout.
+- `js/resolve.js` — detects a point's region and resolves it to that region's
+  containing admin units.
+- `js/routeChoice.js` — pure rule that picks a route under the threshold when the
+  shortest overshoots by ≤10%.
+- `build/prepare-metro.sh` — fetches a city's OSM admin relations (via Overpass)
+  into simplified TopoJSON.
 - `js/distance.js` — pure geometry: great-circle point-to-point (the
   straight-line reference). (`polygonDistance` is also exported and tested but
   is no longer wired into the UI, which now uses route-between mileage.)
@@ -68,7 +77,13 @@ Node (npx). Raw downloads are cached under `data/tmp/` (git-ignored).
   the tool does **not** model legal territorial-sea jurisdiction (the 3-mile
   limit). *Inland* water is included: reservoirs and lakes inside a jurisdiction
   resolve normally, and states/counties that share a river boundary read as 0.
-- **United States only.**
+- **Approximation only.** Boundary, geocoding, and routing data come from public
+  sources (US Census, OpenStreetMap/Nominatim, OSRM); no guarantee of accuracy —
+  not for navigation, legal, or official use.
+- **Coverage** is the US plus curated cities (currently London). Points elsewhere
+  report "outside covered areas." Cross-region pairs (e.g. a US point and a London
+  point) show driving + straight-line only; the per-level between figures appear
+  only for levels both points share.
 - Boundaries are simplified for size; sub-kilometer precision, which is well
   within the tool's 0.1-mile reporting resolution.
 
@@ -79,5 +94,6 @@ Static — push to a GitHub Pages branch/repo and serve the root. All of
 
 ## Data source
 
-US Census Bureau cartographic boundary files (GENZ2023), 1:500k.
-Geocoding: Nominatim (OpenStreetMap). Routing: OSRM public demo.
+US Census Bureau cartographic boundary files (GENZ2023), 1:500k. City boundaries:
+OpenStreetMap administrative relations via Overpass. Geocoding: Nominatim
+(OpenStreetMap). Routing: OSRM public demo.
