@@ -34,7 +34,7 @@ Node (npx). Raw downloads are cached under `data/tmp/` (git-ignored).
 
 ## How it works
 
-- `js/geocode.js` — address → point (US Census Geocoder, Nominatim fallback).
+- `js/geocode.js` — address → point via Nominatim (OpenStreetMap).
 - `js/dataLoader.js` — fetches + caches TopoJSON, converts to GeoJSON (states and
   counties upfront; place polygons lazily, one file per state).
 - `js/resolve.js` — point-in-polygon resolution of a point to its containing
@@ -80,4 +80,4 @@ Static — push to a GitHub Pages branch/repo and serve the root. All of
 ## Data source
 
 US Census Bureau cartographic boundary files (GENZ2023), 1:500k.
-Geocoding: US Census Geocoder, with Nominatim (OpenStreetMap) as a fallback.
+Geocoding: Nominatim (OpenStreetMap). Routing: OSRM public demo.
