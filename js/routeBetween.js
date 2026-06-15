@@ -12,6 +12,8 @@ export function betweenDistance(routeLine, unitA, unitB) {
   for (const seg of chunks.features) {
     const coords = seg.geometry.coordinates;
     if (coords.length < 2) continue;
+    // Classify each chunk by the midpoint of its endpoints — accurate to within
+    // one chunk (~0.25 km) at unit-boundary crossings, which is fine here.
     const mid = turf.midpoint(turf.point(coords[0]), turf.point(coords[coords.length - 1]));
     const inA = unitA && turf.booleanPointInPolygon(mid, unitA);
     const inB = unitB && turf.booleanPointInPolygon(mid, unitB);

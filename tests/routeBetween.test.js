@@ -9,7 +9,7 @@ const square = (x0) => turf.polygon([[[x0, 0], [x0 + 1, 0], [x0 + 1, 1], [x0, 1]
 test('betweenDistance is ~0 for a route crossing directly between adjacent units', () => {
   const route = turf.lineString([[0.5, 0.5], [1.5, 0.5]]); // through A=[0,1] into B=[1,2]
   const r = betweenDistance(route, square(0), square(1));
-  assert.ok(r.betweenMiles < 1, `betweenMiles=${r.betweenMiles}`);
+  assert.ok(r.betweenMiles < 0.2, `betweenMiles=${r.betweenMiles}`); // < one chunk width
   assert.equal(r.betweenLine, null);
 });
 
