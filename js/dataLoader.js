@@ -4,7 +4,10 @@ import { REGIONS, REGION_IDS } from './regions.js';
 const defaultFetch = (...args) => fetch(...args);
 
 function levelPath(base, regionId, levelKey, parentId) {
-  const lvl = REGIONS[regionId].levels.find((l) => l.key === levelKey);
+  const region = REGIONS[regionId];
+  if (!region) throw new Error(`Unknown region: ${regionId}`);
+  const lvl = region.levels.find((l) => l.key === levelKey);
+  if (!lvl) throw new Error(`Unknown level "${levelKey}" for region "${regionId}"`);
   const f = lvl.file;
   if (f.path) return `${base}/${f.path}`;
   return `${base}/${f.lazyDir}/${parentId}.topo.json`;
@@ -12,6 +15,7 @@ function levelPath(base, regionId, levelKey, parentId) {
 
 export function createLoader(base = './data', fetchImpl = defaultFetch) {
   const cache = new Map();
+  let detectLayers = null;
 
   async function loadTopo(path) {
     if (cache.has(path)) return cache.get(path);
@@ -28,10 +32,12 @@ export function createLoader(base = './data', fetchImpl = defaultFetch) {
   return {
     getLevel: (regionId, levelKey, parentId) => loadTopo(levelPath(base, regionId, levelKey, parentId)),
     async getDetectLayers() {
+      if (detectLayers) return detectLayers;
       const out = {};
       for (const id of REGION_IDS) {
         out[id] = await loadTopo(levelPath(base, id, REGIONS[id].detectKey));
       }
+      detectLayers = out;
       return out;
     },
   };

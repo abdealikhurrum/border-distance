@@ -23,12 +23,16 @@ export async function detectRegion(point, loader) {
  * to a feature or null.
  */
 export async function resolvePoint(point, loader) {
-  const region = await detectRegion(point, loader);
+  const layers = await loader.getDetectLayers();
+  let region = null;
+  let detectFeat = null;
+  for (const id of REGION_IDS) {
+    const f = findContaining(point, layers[id].features);
+    if (f) { region = id; detectFeat = f; break; }
+  }
   if (!region) return { region: null, outside: true, units: {} };
 
   const cfg = REGIONS[region];
-  const layers = await loader.getDetectLayers();
-  const detectFeat = findContaining(point, layers[region].features);
   // US place files are keyed by state FIPS; urban levels are fixed-path.
   const parentId = region === 'us' ? detectFeat.properties.STATEFP : null;
 
