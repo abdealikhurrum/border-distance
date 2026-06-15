@@ -39,8 +39,9 @@ Node (npx). Raw downloads are cached under `data/tmp/` (git-ignored).
   counties upfront; place polygons lazily, one file per state).
 - `js/resolve.js` — point-in-polygon resolution of a point to its containing
   `{state, county, place}`.
-- `js/distance.js` — pure geometry: great-circle point-to-point, and
-  polygon-to-polygon minimum boundary distance (0 when polygons touch/overlap).
+- `js/distance.js` — pure geometry: great-circle point-to-point (the
+  straight-line reference). (`polygonDistance` is also exported and tested but
+  is no longer wired into the UI, which now uses route-between mileage.)
 - `js/routing.js` — fetches driving route(s) from the OSRM public demo
   (alternatives when there are no waypoints; a single route through any
   waypoints).
