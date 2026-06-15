@@ -19,7 +19,7 @@ export const REGIONS = {
     metroCenter: [-0.1276, 51.5072], metroRadiusKm: 50,
     levels: [
       { key: 'district', label: 'Local authority', file: { path: 'metros/london/districts.topo.json' } },
-      { key: 'region', label: 'England', relId: 58447, file: { path: 'metros/london/region.topo.json' } },
+      { key: 'region', label: 'Region', relId: 58447, file: { path: 'metros/london/region.topo.json' } },
     ],
   },
   // Additional metros: each is its real local-government units within ~50 km of
