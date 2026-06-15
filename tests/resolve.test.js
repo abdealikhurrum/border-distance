@@ -37,6 +37,8 @@ test('resolvePoint flags outside-US points', async () => {
   const r = await resolvePoint({ lon: 50, lat: 50 }, loader);
   assert.equal(r.outsideUS, true);
   assert.equal(r.place, null);
+  assert.equal(r.state, null);
+  assert.equal(r.county, null);
 });
 
 test('resolvePoint returns null place for unincorporated point', async () => {

@@ -8,6 +8,11 @@ export function findContaining(point, features) {
   return null;
 }
 
+/**
+ * Resolve a {lat, lon} point to its containing admin units.
+ * Returns { outsideUS, state, county, place }. `place` is null for
+ * unincorporated areas; `county` may also be null near simplified coastlines.
+ */
 export async function resolvePoint(point, loader) {
   const states = await loader.getStates();
   const state = findContaining(point, states.features);
