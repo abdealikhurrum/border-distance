@@ -7,12 +7,15 @@ import { betweenDistance } from './routeBetween.js';
 import { chooseRoute } from './routeChoice.js';
 import { REGIONS } from './regions.js';
 import { initMap, setPin, panTo, onPinDrag, setWaypoints, drawScene, clearOverlays } from './map.js';
+import { detectFormat, parseRoute } from './routeImport.js';
+import * as turf from '@turf/turf';
 
 const loader = createLoader('./data');
 const state = {
   A: null, B: null, waypoints: [],
   active: 'A', level: null, units: 'miles',
   routes: [], selected: 0, routeKey: null, between: {},
+  routeSource: 'computed',
 };
 const seq = { A: 0, B: 0 };
 let routeSeq = 0;
@@ -46,20 +49,25 @@ function sharedLevels() {
   return aLevels.filter((l) => bKeys.has(l.key));
 }
 
-async function setEndpoint(key, point, label, { pan = true } = {}) {
+async function resolveEndpoint(key, point, label, { pan = true } = {}) {
   const token = ++seq[key];
+  const resolved = await resolvePoint(point, loader);
+  if (token !== seq[key]) return false;
+  state[key] = { point, resolved, label };
+  setPin(key, point);
+  onPinDrag(key, (p) => setEndpoint(key, p, `dragged pin (${p.lat.toFixed(4)}, ${p.lon.toFixed(4)})`, { pan: false }));
+  if (pan) panTo(point);
+  renderLabel(key);
+  return true;
+}
+
+async function setEndpoint(key, point, label, opts = {}) {
   setStatus(`Resolving point ${key}…`);
   try {
-    const resolved = await resolvePoint(point, loader);
-    if (token !== seq[key]) return;
-    state[key] = { point, resolved, label };
-    setPin(key, point);
-    onPinDrag(key, (p) => setEndpoint(key, p, `dragged pin (${p.lat.toFixed(4)}, ${p.lon.toFixed(4)})`, { pan: false }));
-    if (pan) panTo(point);
-    renderLabel(key);
-    await refreshRoute();
+    const ok = await resolveEndpoint(key, point, label, opts);
+    if (ok) await refreshRoute();
   } catch (e) {
-    if (token === seq[key]) setStatus(`Could not resolve point ${key}: ${e.message}`);
+    setStatus(`Could not resolve point ${key}: ${e.message}`);
   }
 }
 
@@ -67,15 +75,18 @@ function renderLabel(key) {
   const s = state[key];
   if (!s) return;
   const r = s.resolved;
-  let txt;
-  if (r.outside) txt = 'Outside covered areas';
-  else {
-    const cfg = REGIONS[r.region];
-    const parts = cfg.levels.map((l) => r.units[l.key]?.properties.NAME).filter(Boolean);
-    // Append the region name only when it isn't already shown (avoids "London … (London)").
-    txt = parts.includes(cfg.name) ? parts.join(', ') : `${parts.join(', ')} (${cfg.name})`;
+  const cap = document.getElementById(`levels${key}`);
+  if (r.outside) {
+    $(`label${key}`).textContent = `${s.label} → Outside covered areas`;
+    if (cap) cap.textContent = '';
+    return;
   }
-  $(`label${key}`).textContent = `${s.label} → ${txt}`;
+  const cfg = REGIONS[r.region];
+  const parts = cfg.levels
+    .map((l) => { const n = r.units[l.key]?.properties.NAME; return n ? `${n} — ${l.label}` : null; })
+    .filter(Boolean);
+  $(`label${key}`).textContent = `${s.label} → ${parts.join(' · ')} (${cfg.name})`;
+  if (cap) cap.textContent = `Levels here: ${cfg.levels.map((l) => l.label).join(', ')}`;
 }
 
 function syncWaypointMarkers() {
@@ -96,6 +107,7 @@ function renderWaypoints() {
 
 const coordKey = (coords) => coords.map((c) => `${c.lon},${c.lat}`).join(';');
 async function refreshRoute() {
+  if (state.routeSource === 'imported') { render(); return; }
   const A = state.A, B = state.B;
   if (!(A && B && !A.resolved.outside && !B.resolved.outside)) {
     state.routes = []; state.routeKey = null; state.between = {}; render(); return;
@@ -114,6 +126,34 @@ async function refreshRoute() {
   } catch (e) {
     if (token === routeSeq) { state.routes = []; setStatus(`Routing failed: ${e.message}. (Public router may be busy — retry.)`); render(); }
   }
+}
+
+async function importRouteText(text, filename) {
+  try {
+    const fmt = detectFormat(filename, text);
+    const r = parseRoute(text, fmt);
+    let geom = r.geometry;
+    if (geom.coordinates.length > 4000) {
+      geom = turf.simplify(turf.feature(geom), { tolerance: 0.0005, highQuality: false }).geometry;
+    }
+    state.routeSource = 'imported';
+    state.routes = [{ distanceMiles: r.distanceMiles, distanceKm: r.distanceKm, geometry: geom, imported: true }];
+    state.selected = 0; state.between = {}; state.routeKey = null;
+    const cs = geom.coordinates;
+    setStatus('Imported route — resolving endpoints…');
+    await resolveEndpoint('A', { lon: cs[0][0], lat: cs[0][1] }, 'imported start', { pan: false });
+    await resolveEndpoint('B', { lon: cs[cs.length - 1][0], lat: cs[cs.length - 1][1] }, 'imported end', { pan: true });
+    render();
+    setStatus(`Imported route (${fmt}): ${state.routes[0].distanceMiles.toFixed(1)} mi`);
+  } catch (e) {
+    setStatus(`Import failed: ${e.message}`);
+  }
+}
+
+function clearImport() {
+  state.routeSource = 'computed';
+  state.routes = []; state.routeKey = null; state.between = {};
+  if (state.A && state.B) refreshRoute(); else render();
 }
 
 function betweenFor(routeIdx, levelKey) {
@@ -228,6 +268,14 @@ function init() {
   $('level').onchange = (e) => { state.level = e.target.value; render(); };
   $('units').onchange = (e) => { state.units = e.target.value; $('thUnit').textContent = state.units === 'miles' ? 'mi' : 'km'; render(); };
   $('threshold').addEventListener('input', () => { clearTimeout(thresholdTimer); thresholdTimer = setTimeout(render, 250); });
+  $('importFile').addEventListener('change', (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => importRouteText(String(reader.result), file.name);
+    reader.readAsText(file);
+  });
+  $('importPolyBtn').onclick = () => { const v = $('importPoly').value.trim(); if (v) importRouteText(v, ''); };
+  $('clearImport').onclick = () => clearImport();
   setActiveCard();
   render();
 }
