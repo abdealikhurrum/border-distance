@@ -8,35 +8,39 @@ const topo = {
   arcs: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
 };
 
-test('getPlaces requests the per-state path and returns a FeatureCollection', async () => {
+test('getDetectLayers loads US states + London city', async () => {
   const calls = [];
   const fakeFetch = async (url) => { calls.push(url); return { ok: true, json: async () => topo }; };
   const loader = createLoader('./data', fakeFetch);
-  const fc = await loader.getPlaces('48');
+  const layers = await loader.getDetectLayers();
+  assert.ok('us' in layers && 'london' in layers);
+  assert.ok(calls.includes('./data/states.topo.json'));
+  assert.ok(calls.includes('./data/metros/london/city.topo.json'));
+});
+
+test('getLevel: US place is lazy by state fips; county is fixed', async () => {
+  const calls = [];
+  const fakeFetch = async (url) => { calls.push(url); return { ok: true, json: async () => topo }; };
+  const loader = createLoader('./data', fakeFetch);
+  await loader.getLevel('us', 'place', '48');
+  await loader.getLevel('us', 'county');
   assert.equal(calls[0], './data/places/48.topo.json');
-  assert.equal(fc.type, 'FeatureCollection');
-  assert.equal(fc.features[0].properties.NAME, 'P');
+  assert.equal(calls[1], './data/counties.topo.json');
 });
 
-test('loader caches: second call does not re-fetch', async () => {
+test('getLevel: London region is a fixed metros path', async () => {
+  const calls = [];
+  const fakeFetch = async (url) => { calls.push(url); return { ok: true, json: async () => topo }; };
+  const loader = createLoader('./data', fakeFetch);
+  await loader.getLevel('london', 'region');
+  assert.equal(calls[0], './data/metros/london/region.topo.json');
+});
+
+test('caches by path; throws on non-ok', async () => {
   let n = 0;
-  const fakeFetch = async () => { n++; return { ok: true, json: async () => topo }; };
-  const loader = createLoader('./data', fakeFetch);
-  await loader.getStates();
-  const fc = await loader.getStates();
-  assert.equal(fc.type, 'FeatureCollection');
+  const loader = createLoader('./data', async () => { n++; return { ok: true, json: async () => topo }; });
+  await loader.getLevel('us', 'county'); await loader.getLevel('us', 'county');
   assert.equal(n, 1);
-});
-
-test('loader throws on non-ok response', async () => {
-  const fakeFetch = async () => ({ ok: false, status: 404 });
-  const loader = createLoader('./data', fakeFetch);
-  await assert.rejects(() => loader.getCounties(), /404/);
-});
-
-test('loadTopo throws when TopoJSON has no objects', async () => {
-  const empty = { type: 'Topology', objects: {}, arcs: [] };
-  const fakeFetch = async () => ({ ok: true, json: async () => empty });
-  const loader = createLoader('./data', fakeFetch);
-  await assert.rejects(() => loader.getStates(), /No objects in TopoJSON/);
+  const bad = createLoader('./data', async () => ({ ok: false, status: 404 }));
+  await assert.rejects(() => bad.getLevel('us', 'state'), /404/);
 });

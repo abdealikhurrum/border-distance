@@ -1,6 +1,14 @@
 import { feature } from 'topojson-client';
+import { REGIONS, REGION_IDS } from './regions.js';
 
 const defaultFetch = (...args) => fetch(...args);
+
+function levelPath(base, regionId, levelKey, parentId) {
+  const lvl = REGIONS[regionId].levels.find((l) => l.key === levelKey);
+  const f = lvl.file;
+  if (f.path) return `${base}/${f.path}`;
+  return `${base}/${f.lazyDir}/${parentId}.topo.json`;
+}
 
 export function createLoader(base = './data', fetchImpl = defaultFetch) {
   const cache = new Map();
@@ -18,8 +26,13 @@ export function createLoader(base = './data', fetchImpl = defaultFetch) {
   }
 
   return {
-    getStates: () => loadTopo(`${base}/states.topo.json`),
-    getCounties: () => loadTopo(`${base}/counties.topo.json`),
-    getPlaces: (stateFips) => loadTopo(`${base}/places/${stateFips}.topo.json`),
+    getLevel: (regionId, levelKey, parentId) => loadTopo(levelPath(base, regionId, levelKey, parentId)),
+    async getDetectLayers() {
+      const out = {};
+      for (const id of REGION_IDS) {
+        out[id] = await loadTopo(levelPath(base, id, REGIONS[id].detectKey));
+      }
+      return out;
+    },
   };
 }
