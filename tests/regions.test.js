@@ -14,6 +14,15 @@ test('London region has city/region, detectKey city, relIds set', () => {
   assert.equal(REGIONS.london.kind, 'urban');
   assert.equal(REGIONS.london.levels[0].relId, 175342);
   assert.equal(REGIONS.london.levels[1].relId, 58447);
+  assert.equal(REGIONS.london.levels[0].file.path, 'metros/london/city.topo.json');
+  assert.equal(REGIONS.london.levels[1].file.path, 'metros/london/region.topo.json');
+});
+
+test('US level file layout matches the flat data paths', () => {
+  const byKey = Object.fromEntries(REGIONS.us.levels.map((l) => [l.key, l.file]));
+  assert.deepEqual(byKey.place, { lazyDir: 'places', parent: 'state' });
+  assert.equal(byKey.county.path, 'counties.topo.json');
+  assert.equal(byKey.state.path, 'states.topo.json');
 });
 
 test('every level has a file (path or lazyDir+parent); REGION_IDS lists ids', () => {
