@@ -4,10 +4,23 @@ set -euo pipefail
 # usage: prepare-metro.sh <outdir> <levelKey> <relId>
 OUTDIR="$1"; KEY="$2"; REL="$3"
 TMP=data/tmp; mkdir -p "$OUTDIR" "$TMP"
-OVERPASS="https://overpass.kumi.systems/api/interpreter"
 q="[out:json][timeout:120];relation(${REL});(._;>;);out body;"
-curl -fsS "$OVERPASS" --data-urlencode "data=$q" -o "$TMP/${KEY}.osm.json"
+# Try several public Overpass mirrors (the main de endpoint often 406/429s).
+ENDPOINTS=(
+  "https://overpass.kumi.systems/api/interpreter"
+  "https://overpass-api.de/api/interpreter"
+  "https://overpass.private.coffee/api/interpreter"
+)
+ok=0
+for OVERPASS in "${ENDPOINTS[@]}"; do
+  echo "trying $OVERPASS ..."
+  if curl -fsS "$OVERPASS" --data-urlencode "data=$q" -o "$TMP/${KEY}.osm.json"; then ok=1; break; fi
+done
+[ "$ok" = 1 ] || { echo "all Overpass endpoints failed for relation ${REL}"; exit 1; }
 npx -y osmtogeojson "$TMP/${KEY}.osm.json" > "$TMP/${KEY}.geojson"
+# osmtogeojson emits the boundary polygon(s) plus member ways; mapshaper splits
+# mixed geometry into layers and `-target 1` selects the first (the polygon
+# layer for these admin relations). Verify resolution per city when adding more.
 npx -y mapshaper "$TMP/${KEY}.geojson" \
   -target 1 \
   -each 'NAME = name || ""' \
