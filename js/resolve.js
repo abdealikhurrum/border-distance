@@ -1,4 +1,5 @@
 import * as turf from '@turf/turf';
+import { REGIONS, REGION_IDS } from './regions.js';
 
 export function findContaining(point, features) {
   const pt = turf.point([point.lon, point.lat]);
@@ -8,22 +9,34 @@ export function findContaining(point, features) {
   return null;
 }
 
+export async function detectRegion(point, loader) {
+  const layers = await loader.getDetectLayers();
+  for (const id of REGION_IDS) {
+    if (findContaining(point, layers[id].features)) return id;
+  }
+  return null;
+}
+
 /**
- * Resolve a {lat, lon} point to its containing admin units.
- * Returns { outsideUS, state, county, place }. `place` is null for
- * unincorporated areas; `county` may also be null near simplified coastlines.
+ * Resolve a {lat, lon} point to a region and its admin units.
+ * Returns { region, outside, units } where units maps the region's level keys
+ * to a feature or null.
  */
 export async function resolvePoint(point, loader) {
-  const states = await loader.getStates();
-  const state = findContaining(point, states.features);
-  if (!state) return { outsideUS: true, state: null, county: null, place: null };
+  const region = await detectRegion(point, loader);
+  if (!region) return { region: null, outside: true, units: {} };
 
-  const counties = await loader.getCounties();
-  const county = findContaining(point, counties.features);
+  const cfg = REGIONS[region];
+  const layers = await loader.getDetectLayers();
+  const detectFeat = findContaining(point, layers[region].features);
+  // US place files are keyed by state FIPS; urban levels are fixed-path.
+  const parentId = region === 'us' ? detectFeat.properties.STATEFP : null;
 
-  const stateFips = state.properties.STATEFP;
-  const places = await loader.getPlaces(stateFips);
-  const place = findContaining(point, places.features);
-
-  return { outsideUS: false, state, county, place };
+  const units = {};
+  for (const lvl of cfg.levels) {
+    if (lvl.key === cfg.detectKey) { units[lvl.key] = detectFeat; continue; }
+    const fc = await loader.getLevel(region, lvl.key, parentId);
+    units[lvl.key] = findContaining(point, fc.features);
+  }
+  return { region, outside: false, units };
 }
