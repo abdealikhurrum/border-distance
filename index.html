@@ -44,6 +44,7 @@
       </div>
       <button id="pinA" style="margin-top:6px;">Set on map</button>
       <div class="muted" id="labelA"></div>
+      <div class="muted" id="levelsA" style="font-size:0.8em;"></div>
     </div>
 
     <div class="card" id="cardB">
@@ -54,6 +55,7 @@
       </div>
       <button id="pinB" style="margin-top:6px;">Set on map</button>
       <div class="muted" id="labelB"></div>
+      <div class="muted" id="levelsB" style="font-size:0.8em;"></div>
     </div>
 
     <div class="card" id="cardWp">
@@ -64,6 +66,16 @@
       </div>
       <button id="addWp" style="margin-top:6px;">Add on map</button>
       <div id="wpList"></div>
+    </div>
+
+    <div class="card" id="cardImport">
+      <strong>Import a route</strong>
+      <div style="margin-top:6px;"><input type="file" id="importFile" accept=".gpx,.geojson,.json,.kml" /></div>
+      <div style="display:flex; gap:6px; margin-top:6px;">
+        <input type="text" id="importPoly" placeholder="…or paste an encoded polyline" />
+        <button id="importPolyBtn">Load</button>
+      </div>
+      <button id="clearImport" style="margin-top:6px;">Clear import</button>
     </div>
 
     <div id="alts" style="margin:8px 0;"></div>
