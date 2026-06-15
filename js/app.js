@@ -62,6 +62,8 @@ async function resolveEndpoint(key, point, label, { pan = true } = {}) {
 }
 
 async function setEndpoint(key, point, label, opts = {}) {
+  // A manual endpoint change abandons any imported route and reverts to computed.
+  if (state.routeSource === 'imported') clearImportState();
   setStatus(`Resolving point ${key}…`);
   try {
     const ok = await resolveEndpoint(key, point, label, opts);
@@ -150,9 +152,13 @@ async function importRouteText(text, filename) {
   }
 }
 
-function clearImport() {
+function clearImportState() {
   state.routeSource = 'computed';
   state.routes = []; state.routeKey = null; state.between = {};
+}
+
+function clearImport() {
+  clearImportState();
   if (state.A && state.B) refreshRoute(); else render();
 }
 
