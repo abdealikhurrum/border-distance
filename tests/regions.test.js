@@ -8,14 +8,14 @@ test('US region has place/county/state, detectKey state', () => {
   assert.equal(REGIONS.us.kind, 'us');
 });
 
-test('London region: city is a metro buffer, region is an OSM relation', () => {
-  assert.deepEqual(REGIONS.london.levels.map((l) => l.key), ['city', 'region']);
-  assert.equal(REGIONS.london.detectKey, 'city');
+test('London region: district = real local authorities, region = OSM relation', () => {
+  assert.deepEqual(REGIONS.london.levels.map((l) => l.key), ['district', 'region']);
+  assert.equal(REGIONS.london.detectKey, 'district');
   assert.equal(REGIONS.london.kind, 'urban');
-  assert.equal(REGIONS.london.levels[0].buffer.km, 50);
-  assert.deepEqual(REGIONS.london.levels[0].buffer.center, [-0.1276, 51.5072]);
+  assert.equal(REGIONS.london.metroRadiusKm, 50);
+  assert.deepEqual(REGIONS.london.metroCenter, [-0.1276, 51.5072]);
+  assert.equal(REGIONS.london.levels[0].file.path, 'metros/london/districts.topo.json');
   assert.equal(REGIONS.london.levels[1].relId, 58447);
-  assert.equal(REGIONS.london.levels[0].file.path, 'metros/london/city.topo.json');
   assert.equal(REGIONS.london.levels[1].file.path, 'metros/london/region.topo.json');
 });
 

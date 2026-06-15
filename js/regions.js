@@ -11,11 +11,14 @@ export const REGIONS = {
     ],
   },
   london: {
-    id: 'london', name: 'London', kind: 'urban', detectKey: 'city',
+    id: 'london', name: 'London', kind: 'urban', detectKey: 'district',
+    // `district` = real UK local authorities (ONS LAD) within ~50 km of the metro
+    // centre; the 50 km bounds the download, the units are genuine admin polygons.
+    // `region` is the OSM England relation. A point is "in the London metro" if it
+    // falls in one of the loaded local authorities.
+    metroCenter: [-0.1276, 51.5072], metroRadiusKm: 50,
     levels: [
-      // `city` is a metro buffer (core + immediate surroundings within km of center);
-      // built by build/prepare-metro-buffer.sh. `region` is the OSM admin relation.
-      { key: 'city', label: 'London', buffer: { center: [-0.1276, 51.5072], km: 50 }, file: { path: 'metros/london/city.topo.json' } },
+      { key: 'district', label: 'Local authority', file: { path: 'metros/london/districts.topo.json' } },
       { key: 'region', label: 'England', relId: 58447, file: { path: 'metros/london/region.topo.json' } },
     ],
   },
