@@ -33,7 +33,17 @@ test('every level has a file (path or lazyDir+parent); REGION_IDS lists ids', ()
       assert.ok(f.path || (f.lazyDir && f.parent), `${id}.${lvl.key} file`);
     }
   }
-  assert.deepEqual(REGION_IDS.slice().sort(), ['birmingham', 'hyderabad', 'london', 'mumbai', 'paris', 'stuttgart', 'us']);
+  assert.deepEqual(REGION_IDS.slice().sort(), ['birmingham', 'ca', 'hyderabad', 'london', 'mumbai', 'paris', 'stuttgart', 'us']);
+});
+
+test('Canada is a full-country region: csd→cd→province, detectKey province, csd lazy by province', () => {
+  const ca = REGIONS.ca;
+  assert.equal(ca.kind, 'country');
+  assert.equal(ca.detectKey, 'province');
+  assert.deepEqual(ca.levels.map((l) => l.key), ['csd', 'cd', 'province']);
+  const csd = ca.levels.find((l) => l.key === 'csd');
+  assert.deepEqual(csd.file, { lazyDir: 'ca/csd', parent: 'province' });
+  assert.equal(ca.levels.find((l) => l.key === 'province').file.path, 'ca/provinces.topo.json');
 });
 
 test('each metro has a district level with a data file', () => {

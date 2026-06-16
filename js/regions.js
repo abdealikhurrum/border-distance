@@ -49,6 +49,15 @@ export const REGIONS = {
     metroCenter: [78.4867, 17.3850], metroRadiusKm: 50,
     levels: [{ key: 'district', label: 'Municipal Corporation', file: { path: 'metros/hyderabad/districts.topo.json' } }],
   },
+  // Full-country coverage (like the US). Statistics Canada 2021 boundaries.
+  ca: {
+    id: 'ca', name: 'Canada', kind: 'country', detectKey: 'province',
+    levels: [
+      { key: 'csd', label: 'Census subdivision', file: { lazyDir: 'ca/csd', parent: 'province' } },
+      { key: 'cd', label: 'Census division', file: { path: 'ca/cd.topo.json' } },
+      { key: 'province', label: 'Province / Territory', file: { path: 'ca/provinces.topo.json' } },
+    ],
+  },
 };
 
 export const REGION_IDS = Object.keys(REGIONS);

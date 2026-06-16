@@ -36,8 +36,9 @@ export async function resolvePoint(point, loader) {
   if (!region) return { region: null, outside: true, units: {} };
 
   const cfg = REGIONS[region];
-  // US place files are keyed by state FIPS; urban levels are fixed-path.
-  const parentId = region === 'us' ? detectFeat.properties.STATEFP : null;
+  // Lazy sub-level files are named by the detected adm1 unit's id. US states
+  // carry STATEFP; other countries' adm1 carry a normalized ID.
+  const parentId = detectFeat.properties.ID ?? detectFeat.properties.STATEFP ?? null;
 
   const units = {};
   for (const lvl of cfg.levels) {
