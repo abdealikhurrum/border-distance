@@ -33,7 +33,20 @@ test('every level has a file (path or lazyDir+parent); REGION_IDS lists ids', ()
       assert.ok(f.path || (f.lazyDir && f.parent), `${id}.${lvl.key} file`);
     }
   }
-  assert.deepEqual(REGION_IDS.slice().sort(), ['birmingham', 'ca', 'hyderabad', 'london', 'mumbai', 'mx', 'paris', 'stuttgart', 'us']);
+  assert.deepEqual(REGION_IDS.slice().sort(), ['birmingham', 'ca', 'gujarat', 'hyderabad', 'london', 'maharashtra', 'mumbai', 'mx', 'paris', 'stuttgart', 'telangana', 'us']);
+});
+
+test('Indian states: detectKey state, state→district→taluka; Maharashtra adds municipalCorp', () => {
+  for (const id of ['maharashtra', 'gujarat', 'telangana']) {
+    const r = REGIONS[id];
+    assert.equal(r.kind, 'state');
+    assert.equal(r.detectKey, 'state');
+    const keys = r.levels.map((l) => l.key);
+    assert.ok(keys.includes('state') && keys.includes('district') && keys.includes('taluka'), `${id} levels`);
+    assert.equal(r.levels.find((l) => l.key === 'state').file.path, `in/${id}/state.topo.json`);
+  }
+  assert.ok(REGIONS.maharashtra.levels.some((l) => l.key === 'municipalCorp'));
+  assert.ok(!REGIONS.gujarat.levels.some((l) => l.key === 'municipalCorp'));
 });
 
 test('Mexico is a full-country region: municipio→estado, detectKey estado, municipio lazy by estado', () => {

@@ -66,6 +66,34 @@ export const REGIONS = {
       { key: 'estado', label: 'Estado', file: { path: 'mx/estados.topo.json' } },
     ],
   },
+  // Indian states (OSM). state→district→taluka everywhere; municipal corporations
+  // only where OSM has them (Maharashtra). Listed after the Mumbai/Hyderabad metros
+  // so those cities keep municipal-corporation detail.
+  maharashtra: {
+    id: 'maharashtra', name: 'Maharashtra', kind: 'state', detectKey: 'state',
+    levels: [
+      { key: 'municipalCorp', label: 'Municipal Corporation', file: { path: 'in/maharashtra/municipal.topo.json' } },
+      { key: 'taluka', label: 'Taluka', file: { path: 'in/maharashtra/talukas.topo.json' } },
+      { key: 'district', label: 'District', file: { path: 'in/maharashtra/districts.topo.json' } },
+      { key: 'state', label: 'State', file: { path: 'in/maharashtra/state.topo.json' } },
+    ],
+  },
+  gujarat: {
+    id: 'gujarat', name: 'Gujarat', kind: 'state', detectKey: 'state',
+    levels: [
+      { key: 'taluka', label: 'Taluka', file: { path: 'in/gujarat/talukas.topo.json' } },
+      { key: 'district', label: 'District', file: { path: 'in/gujarat/districts.topo.json' } },
+      { key: 'state', label: 'State', file: { path: 'in/gujarat/state.topo.json' } },
+    ],
+  },
+  telangana: {
+    id: 'telangana', name: 'Telangana', kind: 'state', detectKey: 'state',
+    levels: [
+      { key: 'taluka', label: 'Taluka', file: { path: 'in/telangana/talukas.topo.json' } },
+      { key: 'district', label: 'District', file: { path: 'in/telangana/districts.topo.json' } },
+      { key: 'state', label: 'State', file: { path: 'in/telangana/state.topo.json' } },
+    ],
+  },
 };
 
 export const REGION_IDS = Object.keys(REGIONS);

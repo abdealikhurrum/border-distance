@@ -1,8 +1,9 @@
 # Border Distance
 
 A static web tool covering the **United States, Canada, and Mexico** (full
-countries) plus several **metros** (London, Birmingham, Stuttgart, Paris, Mumbai,
-Hyderabad). Pick two points (by address or by clicking the map), optionally add
+countries), the **Indian states of Maharashtra, Gujarat, and Telangana**
+(state → district → taluka, with municipal corporations where OSM has them), and
+several **metros** (London, Birmingham, Stuttgart, Paris, Mumbai, Hyderabad). Pick two points (by address or by clicking the map), optionally add
 waypoints, and see the **driving distance** between them plus how much of the
 route falls *between* their administrative units at each level. Each point is
 resolved to the specific polygons that contain it; the levels are
