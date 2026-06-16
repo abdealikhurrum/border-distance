@@ -33,7 +33,16 @@ test('every level has a file (path or lazyDir+parent); REGION_IDS lists ids', ()
       assert.ok(f.path || (f.lazyDir && f.parent), `${id}.${lvl.key} file`);
     }
   }
-  assert.deepEqual(REGION_IDS.slice().sort(), ['birmingham', 'ca', 'hyderabad', 'london', 'mumbai', 'paris', 'stuttgart', 'us']);
+  assert.deepEqual(REGION_IDS.slice().sort(), ['birmingham', 'ca', 'hyderabad', 'london', 'mumbai', 'mx', 'paris', 'stuttgart', 'us']);
+});
+
+test('Mexico is a full-country region: municipio→estado, detectKey estado, municipio lazy by estado', () => {
+  const mx = REGIONS.mx;
+  assert.equal(mx.kind, 'country');
+  assert.equal(mx.detectKey, 'estado');
+  assert.deepEqual(mx.levels.map((l) => l.key), ['municipio', 'estado']);
+  assert.deepEqual(mx.levels.find((l) => l.key === 'municipio').file, { lazyDir: 'mx/municipios', parent: 'estado' });
+  assert.equal(mx.levels.find((l) => l.key === 'estado').file.path, 'mx/estados.topo.json');
 });
 
 test('Canada is a full-country region: csd→cd→province, detectKey province, csd lazy by province', () => {

@@ -58,6 +58,14 @@ export const REGIONS = {
       { key: 'province', label: 'Province / Territory', file: { path: 'ca/provinces.topo.json' } },
     ],
   },
+  // Full-country coverage. INEGI Marco Geoestadístico (estados + municipios).
+  mx: {
+    id: 'mx', name: 'Mexico', kind: 'country', detectKey: 'estado',
+    levels: [
+      { key: 'municipio', label: 'Municipio', file: { lazyDir: 'mx/municipios', parent: 'estado' } },
+      { key: 'estado', label: 'Estado', file: { path: 'mx/estados.topo.json' } },
+    ],
+  },
 };
 
 export const REGION_IDS = Object.keys(REGIONS);
